@@ -1,6 +1,7 @@
 FROM alpine:latest
 ARG username=matthew
 RUN apk add --update --no-cache openssh
+RUN echo "Port 8080" >> /etc/ssh/sshd_config
 RUN echo "PasswordAuthentication no" >> /etc/ssh/sshd_config
 RUN echo "PermitRootLogin no" >> /etc/ssh/sshd_config
 RUN echo "Match User $username" >> /etc/ssh/sshd_config
