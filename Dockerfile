@@ -2,6 +2,9 @@ FROM alpine:latest
 ARG USERNAME=matthew
 RUN apk add --update --no-cache openssh
 RUN echo -e "\
+HostKey /mnt/keys/ssh_host_rsa_key \n\
+HostKey /mnt/keys/ssh_host_ecdsa_key \n\
+HostKey /mnt/keys/ssh_host_ed25519_key \n\
 Port 8080 \n\
 PasswordAuthentication no \n\
 PermitRootLogin no \n\
