@@ -1,0 +1,13 @@
+apiVersion: '2019-12-01'
+location: westus3
+name: sshd-container-group
+properties:
+  containers:
+  - name: sshd-container
+    properties:
+      image: ghcr.io/matthewpetro/sshd-docker:latest
+      ports: [8080]
+ipAddress:
+  dnsNameLabel: sshd-container
+  dnsNameLabelReusePolicy: tenantReuse
+type: Microsoft.ContainerInstance/containerGroups

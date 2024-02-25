@@ -28,10 +28,11 @@ SSH_HOST_RSA_KEY_PUB=$(cat ${rsa_key_file}.pub | tr -d '\n')
 
 az container create
   --resource-group PetroRG
-  --name sshd-docker2
-  --image ghcr.io/matthewpetro/sshd-docker:latest
-  --dns-name-label sshd-docker2
-  --ports 8080
+  --file deploy-container.yaml
+  # --name sshd-docker2
+  # --image ghcr.io/matthewpetro/sshd-docker:latest
+  # --dns-name-label sshd-docker2
+  # --ports 8080
   --secrets-mount-path /mnt/keys
   --secrets
     ssh_host_ecdsa_key=$SSH_HOST_ECDSA_KEY
