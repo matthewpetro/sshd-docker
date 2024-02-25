@@ -19,25 +19,25 @@ while getopts ":d:e:r:" opt; do
   esac
 done
 
-SSH_HOST_ECDSA_KEY=$(cat $ecdsa_key_file | tr -d '\n')
-SSH_HOST_ECDSA_KEY_PUB=$(cat ${ecdsa_key_file}.pub | tr -d '\n')
-SSH_HOST_ED25519_KEY=$(cat $ed25519_key_file | tr -d '\n')
-SSH_HOST_ED25519_KEY_PUB=$(cat ${ed25519_key_file}.pub | tr -d '\n')
-SSH_HOST_RSA_KEY=$(cat $rsa_key_file | tr -d '\n')
-SSH_HOST_RSA_KEY_PUB=$(cat ${rsa_key_file}.pub | tr -d '\n')
+export SSH_HOST_ECDSA_KEY=$(cat $ecdsa_key_file | tr -d '\n' | base64 -w 0)
+export SSH_HOST_ECDSA_KEY_PUB=$(cat ${ecdsa_key_file}.pub | tr -d '\n' | base64 -w 0)
+export SSH_HOST_ED25519_KEY=$(cat $ed25519_key_file | tr -d '\n' | base64 -w 0)
+export SSH_HOST_ED25519_KEY_PUB=$(cat ${ed25519_key_file}.pub | tr -d '\n' | base64 -w 0)
+export SSH_HOST_RSA_KEY=$(cat $rsa_key_file | tr -d '\n' | base64 -w 0)
+export SSH_HOST_RSA_KEY_PUB=$(cat ${rsa_key_file}.pub | tr -d '\n' | base64 -w 0)
 
-az container create
-  --resource-group PetroRG
-  --file deploy-container.yaml
-  # --name sshd-docker2
-  # --image ghcr.io/matthewpetro/sshd-docker:latest
-  # --dns-name-label sshd-docker2
-  # --ports 8080
-  --secrets-mount-path /mnt/keys
-  --secrets
-    ssh_host_ecdsa_key=$SSH_HOST_ECDSA_KEY
-    ssh_host_ecdsa_key.pub=$SSH_HOST_ECDSA_KEY_PUB
-    ssh_host_ed25519_key=$SSH_HOST_ED25519_KEY
-    ssh_host_ed25519_key.pub=$SSH_HOST_ED25519_KEY_PUB
-    ssh_host_rsa_key=$SSH_HOST_RSA_KEY
-    ssh_host_rsa_key.pub=$SSH_HOST_RSA_KEY_PUB
+envsubst < deploy-container.yaml > deploy-container.tmp.yaml
+
+az container create \
+  --resource-group PetroRG \
+  --file deploy-container.tmp.yaml
+  # --secrets-mount-path /mnt/keys \
+  # --secrets \
+  #   ssh_host_ecdsa_key="$SSH_HOST_ECDSA_KEY" \
+  #   ssh_host_ecdsa_key.pub="$SSH_HOST_ECDSA_KEY_PUB" \
+  #   ssh_host_ed25519_key="$SSH_HOST_ED25519_KEY" \
+  #   ssh_host_ed25519_key.pub="$SSH_HOST_ED25519_KEY_PUB" \
+  #   ssh_host_rsa_key="$SSH_HOST_RSA_KEY" \
+  #   ssh_host_rsa_key.pub="$SSH_HOST_RSA_KEY_PUB" \
+
+rm deploy-container.tmp.yaml
