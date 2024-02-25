@@ -1,43 +1,22 @@
 #! /bin/bash
 
-# This script expects the following command line arguments:
-#   -d <path to the ECDSA private key file>
-#   -e <path to the ED25519 private key file>
-#   -r <path to the RSA private key file>
+ssh-keygen -t ecdsa -b 256 -N "" -q -f ssh_host_ecdsa_key
+ssh-keygen -t ed25519 -N "" -q -f ssh_host_ed25519_key
+ssh-keygen -t rsa -b 2048 -N "" -q -f ssh_host_rsa_key
 
-# The script also expects that the corresponding public key files are in the same directory
-# as the private key files and that the public key files have the same name as the private key
-# files, but with a .pub extension.
+export SSH_HOST_ECDSA_KEY=$(cat ./ssh_host_ecdsa_key | tr -d '\n' | base64 -w 0)
+export SSH_HOST_ECDSA_KEY_PUB=$(cat ./ssh_host_ecdsa_key.pub | tr -d '\n' | base64 -w 0)
+export SSH_HOST_ED25519_KEY=$(cat ./ssh_host_ed25519_key | tr -d '\n' | base64 -w 0)
+export SSH_HOST_ED25519_KEY_PUB=$(cat ./ssh_host_ed25519_key.pub | tr -d '\n' | base64 -w 0)
+export SSH_HOST_RSA_KEY=$(cat ./ssh_host_rsa_key | tr -d '\n' | base64 -w 0)
+export SSH_HOST_RSA_KEY_PUB=$(cat ./ssh_host_rsa_key.pub | tr -d '\n' | base64 -w 0)
 
-while getopts ":d:e:r:" opt; do
-  case $opt in
-    d) ecdsa_key_file=$OPTARG;;
-    e) ed25519_key_file=$OPTARG;;
-    r) rsa_key_file=$OPTARG;;
-    :) echo "Option -$OPTARG requires an argument.";;
-    ?) echo "Invalid option -$OPTARG";;
-  esac
-done
-
-export SSH_HOST_ECDSA_KEY=$(cat $ecdsa_key_file | tr -d '\n' | base64 -w 0)
-export SSH_HOST_ECDSA_KEY_PUB=$(cat ${ecdsa_key_file}.pub | tr -d '\n' | base64 -w 0)
-export SSH_HOST_ED25519_KEY=$(cat $ed25519_key_file | tr -d '\n' | base64 -w 0)
-export SSH_HOST_ED25519_KEY_PUB=$(cat ${ed25519_key_file}.pub | tr -d '\n' | base64 -w 0)
-export SSH_HOST_RSA_KEY=$(cat $rsa_key_file | tr -d '\n' | base64 -w 0)
-export SSH_HOST_RSA_KEY_PUB=$(cat ${rsa_key_file}.pub | tr -d '\n' | base64 -w 0)
+rm ssh_host_ecdsa_key* ssh_host_ed25519_key* ssh_host_rsa_key*
 
 envsubst < deploy-container.yaml > deploy-container.tmp.yaml
 
 az container create \
   --resource-group PetroRG \
   --file deploy-container.tmp.yaml
-  # --secrets-mount-path /mnt/keys \
-  # --secrets \
-  #   ssh_host_ecdsa_key="$SSH_HOST_ECDSA_KEY" \
-  #   ssh_host_ecdsa_key.pub="$SSH_HOST_ECDSA_KEY_PUB" \
-  #   ssh_host_ed25519_key="$SSH_HOST_ED25519_KEY" \
-  #   ssh_host_ed25519_key.pub="$SSH_HOST_ED25519_KEY_PUB" \
-  #   ssh_host_rsa_key="$SSH_HOST_RSA_KEY" \
-  #   ssh_host_rsa_key.pub="$SSH_HOST_RSA_KEY_PUB" \
 
 rm deploy-container.tmp.yaml
